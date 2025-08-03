@@ -216,10 +216,16 @@ const CodeEditor = () => {
       ref={editorWrapperRef}
       className="editor-wrapper"
     >
-      {/* Header is now part of the flex layout */}
+      {/* Header is now part of the flex layout and clickable */}
       {currentDocument && (
-        <div className="document-header">
-          <h1 className="document-title">{currentDocument.title}</h1>
+        <div 
+          className="document-header"
+          onClick={() => setIsCommandPaletteOpen(true)}
+          title="Click to open document list"
+        >
+          <h1 className="document-title">
+            {currentDocument.title} <span className="title-click-indicator">⌘</span>
+          </h1>
           <div className="document-meta">
             Last updated: {new Date(currentDocument.updatedAt).toLocaleString()}
           </div>
@@ -228,14 +234,6 @@ const CodeEditor = () => {
       
       {/* Editor container will expand to fill remaining space */}
       <div ref={editorRef} className="editor" />
-      
-      <button 
-        className="command-button" 
-        onClick={() => setIsCommandPaletteOpen(true)}
-        title="Open document list (Ctrl+Enter or Ctrl+P)"
-      >
-        ⌘
-      </button>
       
       <CommandPalette 
         isOpen={isCommandPaletteOpen}

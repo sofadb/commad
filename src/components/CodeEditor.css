@@ -27,6 +27,12 @@
   justify-content: center;
   box-sizing: border-box;
   z-index: 10000;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.document-header:hover {
+  background-color: #eaeaea;
 }
 
 /* Editor container styles */
@@ -57,6 +63,15 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.title-click-indicator {
+  font-size: 14px;
+  color: #0066cc;
+  margin-left: 8px;
+  opacity: 0.7;
 }
 
 .document-meta {
@@ -124,28 +139,4 @@
   color: #999;
 }
 
-/* Command Button styling */
-.command-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #0066cc;
-  color: white;
-  border: none;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10000;
-  transition: all 0.2s ease;
-}
-
-.command-button:hover {
-  background-color: #0055aa;
-  transform: scale(1.05);
-}
+/* Command button removed - now using header click instead */
