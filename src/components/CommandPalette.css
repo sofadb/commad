@@ -1,0 +1,238 @@
+.command-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.2s ease;
+  z-index: 10000;
+  backdrop-filter: blur(3px);
+}
+
+.command-content {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  max-width: 90vw;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 1px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease;
+  z-index: 10001; /* Make sure it's above everything else, including the document header */
+  overflow: hidden;
+}
+
+.command-palette {
+  width: 100%;
+}
+
+.command-input {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  outline: none;
+}
+
+.command-header {
+  border-bottom: 1px solid #eee;
+}
+
+.command-tip {
+  padding: 4px 16px 8px;
+  font-size: 12px;
+  color: #888;
+  background-color: #fafafa;
+}
+
+.command-tip kbd {
+  background-color: #eee;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  padding: 1px 4px;
+  font-size: 11px;
+}
+
+.command-list {
+  padding: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.command-empty {
+  padding: 16px;
+  color: #888;
+  text-align: center;
+  font-size: 14px;
+}
+
+.command-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.command-empty-tip {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.command-empty-tip kbd {
+  background-color: #eee;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  padding: 1px 4px;
+  font-size: 11px;
+}
+
+.command-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.command-item[data-selected=true],
+.command-item:hover {
+  background-color: #f5f5f5;
+}
+
+.command-icon {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.command-details {
+  flex: 1;
+}
+
+.command-action {
+  font-size: 12px;
+  color: #888;
+  margin-left: 8px;
+  opacity: 0;
+}
+
+.command-item[data-selected=true] .command-action {
+  opacity: 1;
+}
+
+.command-create-new {
+  margin-top: 12px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+
+.command-name {
+  font-weight: 500;
+}
+
+.command-description {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.command-shortcut {
+  display: flex;
+  gap: 4px;
+}
+
+.command-key {
+  padding: 2px 6px;
+  background-color: #eee;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* Document command styling */
+.command-group-heading {
+  font-size: 12px;
+  color: #666;
+  padding: 8px 16px;
+  margin-top: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.command-back {
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+/* New document form */
+.new-document-form {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.new-document-input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  font-size: 16px;
+}
+
+.new-document-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.new-document-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.new-document-btn.cancel {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+.new-document-btn.cancel:hover {
+  background-color: #f5f5f5;
+}
+
+.new-document-btn.create {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+}
+
+.new-document-btn.create:hover {
+  background-color: #0055aa;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
