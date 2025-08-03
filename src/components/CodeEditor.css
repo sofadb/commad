@@ -1,0 +1,89 @@
+.editor-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  border: none;
+  z-index: 9999;
+  background-color: #ffffff; /* Light theme background */
+}
+
+.editor {
+  height: 100%;
+  width: 100%;
+}
+
+/* Make sure the editor fills the container */
+.cm-editor {
+  height: 100vh !important;
+  width: 100%;
+  font-size: 16px;
+}
+
+.cm-scroller {
+  overflow: auto;
+  height: 100%;
+}
+
+/* Markdown syntax highlighting */
+.cm-header {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.cm-header-1 {
+  font-size: 1.6em;
+}
+
+.cm-header-2 {
+  font-size: 1.4em;
+}
+
+.cm-header-3 {
+  font-size: 1.2em;
+}
+
+.cm-strong {
+  color: #333;
+  font-weight: bold;
+}
+
+.cm-em {
+  color: #333;
+  font-style: italic;
+}
+
+.cm-link {
+  color: #0066cc;
+  text-decoration: underline;
+}
+
+.cm-url {
+  color: #0E639C;
+}
+
+.cm-quote {
+  color: #008000;
+  font-style: italic;
+  border-left: 3px solid #ddd;
+  padding-left: 10px;
+}
+
+.cm-list {
+  color: #800080;
+}
+
+.cm-code {
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  padding: 0 3px;
+  font-family: monospace;
+}
+
+.cm-hr {
+  color: #999;
+}

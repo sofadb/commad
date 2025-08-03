@@ -1,34 +1,79 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import CodeEditor from './components/CodeEditor'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [code, setCode] = useState(`# Markdown Editor
+
+## Features
+
+- **Full-screen** Markdown editor
+- *Light theme* for comfortable writing
+- Simple and distraction-free interface
+
+### How to use
+
+1. Start typing your Markdown content
+2. Use standard Markdown syntax for formatting:
+   - # headers
+   - **bold text**
+   - *italic text*
+   - \`inline code\`
+   - [links](https://example.com)
+
+### Text formatting examples
+
+This is *italic text*.
+
+This is **bold text**.
+
+This is a \`code snippet\` inline.
+
+### Code blocks with syntax highlighting
+
+\`\`\`javascript
+// JavaScript code example
+function greeting(name) {
+  return \`Hello, \${name}!\`;
+}
+
+console.log(greeting('World'));
+\`\`\`
+
+\`\`\`python
+# Python code example
+def factorial(n):
+    if n <= 1:
+        return 1
+    return n * factorial(n-1)
+
+print(factorial(5))
+\`\`\`
+
+This is a code block:
+
+\`\`\`
+This is a plain text code block
+No language highlighting needed
+Just pure markdown
+\`\`\`
+
+---
+
+> This is a blockquote that can be used for important notes or quotes.
+`)
+
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="editor-container">
+      <CodeEditor
+        initialValue={code}
+        onChange={handleCodeChange}
+      />
+    </div>
   )
 }
 
