@@ -17,16 +17,20 @@ const CodeEditor = () => {
   const [currentDocument, setCurrentDocument] = useState(null);
   const [content, setContent] = useState('');
   
-  // Initialize documents from local storage
+  // Initialize documents from database
   useEffect(() => {
-    const allDocs = DocumentManager.getAllDocuments();
-    setDocuments(allDocs);
-    
-    // Load the most recent document by default
-    if (allDocs.length > 0) {
-      setCurrentDocument(allDocs[0]);
-      setContent(allDocs[0].content);
+    async function loadDocuments() {
+      const allDocs = await DocumentManager.getAllDocuments();
+      setDocuments(allDocs);
+      
+      // Load the most recent document by default
+      if (allDocs.length > 0) {
+        setCurrentDocument(allDocs[0]);
+        setContent(allDocs[0].content);
+      }
     }
+    
+    loadDocuments();
   }, []);
   
   // Save current document content when it changes
@@ -38,11 +42,16 @@ const CodeEditor = () => {
         updatedAt: new Date().toISOString()
       };
       
-      const savedDoc = DocumentManager.saveDocument(updatedDoc);
-      setCurrentDocument(savedDoc);
+      async function saveDocument() {
+        const savedDoc = await DocumentManager.saveDocument(updatedDoc);
+        setCurrentDocument(savedDoc);
+        
+        // Update document list to reflect the change
+        const allDocs = await DocumentManager.getAllDocuments();
+        setDocuments(allDocs);
+      }
       
-      // Update document list to reflect the change
-      setDocuments(DocumentManager.getAllDocuments());
+      saveDocument();
     }
   }, [content, currentDocument]);
   
@@ -59,7 +68,10 @@ const CodeEditor = () => {
           updatedAt: new Date().toISOString()
         };
         
-        DocumentManager.saveDocument(updatedDoc);
+        // Save the document but don't wait for it
+        DocumentManager.saveDocument(updatedDoc).catch(err => 
+          console.error('Error saving document before switching:', err)
+        );
       }
       
       // Switch to the selected document
@@ -80,26 +92,31 @@ const CodeEditor = () => {
   };
   
   // Handle creating a new document
-  const handleCreateDocument = (title) => {
-    // Create a new document
-    const newDoc = DocumentManager.createDocument(title);
-    
-    // Update document list
-    setDocuments(DocumentManager.getAllDocuments());
-    
-    // Switch to the new document
-    setCurrentDocument(newDoc);
-    setContent(newDoc.content);
-    
-    // Update editor content
-    if (editorView) {
-      editorView.dispatch({
-        changes: {
-          from: 0,
-          to: editorView.state.doc.length,
-          insert: newDoc.content
-        }
-      });
+  const handleCreateDocument = async (title) => {
+    try {
+      // Create a new document
+      const newDoc = await DocumentManager.createDocument(title);
+      
+      // Update document list
+      const allDocs = await DocumentManager.getAllDocuments();
+      setDocuments(allDocs);
+      
+      // Switch to the new document
+      setCurrentDocument(newDoc);
+      setContent(newDoc.content);
+      
+      // Update editor content
+      if (editorView) {
+        editorView.dispatch({
+          changes: {
+            from: 0,
+            to: editorView.state.doc.length,
+            insert: newDoc.content
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error creating document:', error);
     }
   };
   
@@ -127,9 +144,17 @@ const CodeEditor = () => {
           updatedAt: new Date().toISOString()
         };
         
-        const savedDoc = DocumentManager.saveDocument(updatedDoc);
-        setCurrentDocument(savedDoc);
-        setDocuments(DocumentManager.getAllDocuments());
+        // Use async/await in an IIFE
+        (async () => {
+          try {
+            const savedDoc = await DocumentManager.saveDocument(updatedDoc);
+            setCurrentDocument(savedDoc);
+            const allDocs = await DocumentManager.getAllDocuments();
+            setDocuments(allDocs);
+          } catch (error) {
+            console.error('Error saving document with keyboard shortcut:', error);
+          }
+        })();
       }
     }
   }, [currentDocument, content]);
@@ -190,9 +215,17 @@ const CodeEditor = () => {
                   updatedAt: new Date().toISOString()
                 };
                 
-                const savedDoc = DocumentManager.saveDocument(updatedDoc);
-                setCurrentDocument(savedDoc);
-                setDocuments(DocumentManager.getAllDocuments());
+                // Use an IIFE to handle async calls
+                (async () => {
+                  try {
+                    const savedDoc = await DocumentManager.saveDocument(updatedDoc);
+                    setCurrentDocument(savedDoc);
+                    const allDocs = await DocumentManager.getAllDocuments();
+                    setDocuments(allDocs);
+                  } catch (error) {
+                    console.error('Error saving document in CodeMirror keybinding:', error);
+                  }
+                })();
               }
               return true;
             }
