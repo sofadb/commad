@@ -12,10 +12,9 @@ const DEFAULT_DOCUMENT = {
   updatedAt: new Date().toISOString()
 };
 
-// Initialize database and migrate data
+// Initialize database
 (async () => {
   await DatabaseService.init();
-  await DatabaseService.migrateFromLocalStorage();
 })();
 
 export const DocumentManager = {
