@@ -128,38 +128,5 @@ export const DatabaseService = {
       console.error(`Error deleting document with id ${id}:`, error);
       return false;
     }
-  },
-
-  /**
-   * Migrate data from localStorage to PouchDB
-   * @returns {Promise<boolean>} Promise resolving to success status
-   */
-  migrateFromLocalStorage: async () => {
-    try {
-      const STORAGE_KEY = 'commad-documents';
-      const localStorageData = localStorage.getItem(STORAGE_KEY);
-      
-      if (!localStorageData) {
-        return true; // Nothing to migrate
-      }
-      
-      const documents = JSON.parse(localStorageData);
-      
-      // Save each document to PouchDB
-      for (const doc of documents) {
-        await DatabaseService.saveDocument({
-          ...doc,
-          _id: doc.id // PouchDB uses _id as the primary key
-        });
-      }
-      
-      // Optional: Clear localStorage after successful migration
-      // localStorage.removeItem(STORAGE_KEY);
-      
-      return true;
-    } catch (error) {
-      console.error('Error migrating from localStorage:', error);
-      return false;
-    }
   }
 };
