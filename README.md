@@ -51,6 +51,17 @@ npm run preview
 
 This will serve the production build at http://localhost:4173 (or another port if 4173 is in use).
 
+## Local Database Setup
+
+For development and debugging, this project uses CouchDB. See the [`couchdb/`](./couchdb/) directory for complete setup instructions and Docker configuration.
+
+Quick start:
+```bash
+cd couchdb
+cp .env.example .env
+docker-compose up -d
+```
+
 ## Additional Scripts
 
 - `npm run lint` - Run ESLint to check code quality
