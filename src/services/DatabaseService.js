@@ -2,6 +2,7 @@
  * DatabaseService - Service for interacting with PouchDB
  */
 import PouchDB from 'pouchdb';
+import syncService from './SyncService.js';
 
 // Create a database instance
 const db = new PouchDB('commad-documents');
@@ -128,5 +129,49 @@ export const DatabaseService = {
       console.error(`Error deleting document with id ${id}:`, error);
       return false;
     }
+  },
+
+  /**
+   * Get sync status
+   * @returns {Object} Current sync status
+   */
+  getSyncStatus: () => {
+    return syncService.getStatus();
+  },
+
+  /**
+   * Force a sync with remote database
+   * @returns {Promise} Promise resolving when sync is complete
+   */
+  forceSync: async () => {
+    return await syncService.forceSync();
+  },
+
+  /**
+   * Add listener for sync status changes
+   * @param {Function} callback - Callback function to call on status changes
+   * @returns {Function} Unsubscribe function
+   */
+  addSyncListener: (callback) => {
+    return syncService.addListener(callback);
+  },
+
+  /**
+   * Get conflicts that need resolution
+   * @returns {Promise<Array>} Promise resolving to array of conflict objects
+   */
+  getConflicts: async () => {
+    return await syncService.getConflicts();
+  },
+
+  /**
+   * Resolve a document conflict
+   * @param {string} docId - Document ID
+   * @param {string} winningRev - Revision to keep
+   * @param {Array} losingRevs - Revisions to remove
+   * @returns {Promise<boolean>} Promise resolving to success status
+   */
+  resolveConflict: async (docId, winningRev, losingRevs) => {
+    return await syncService.resolveConflict(docId, winningRev, losingRevs);
   }
 };

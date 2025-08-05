@@ -1,6 +1,9 @@
-import { useState } from 'react'
-import './App.css'
-import CodeEditor from './components/CodeEditor'
+import React, { useState } from 'react';
+import './App.css';
+import CodeEditor from './components/CodeEditor';
+import CommandPalette from './components/CommandPalette';
+import ConfigDisplay from './components/ConfigDisplay';
+import SyncStatus from './components/SyncStatus';
 
 function App() {
   const [code, setCode] = useState(`# Markdown Editor
@@ -69,6 +72,8 @@ Just pure markdown
 
   return (
     <div className="editor-container">
+      <ConfigDisplay />
+      <SyncStatus />
       <CodeEditor
         initialValue={code}
         onChange={handleCodeChange}
