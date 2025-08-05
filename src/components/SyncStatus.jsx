@@ -25,24 +25,24 @@ const SyncStatus = () => {
       setSyncStatus(newStatus);
     });
 
-    // Check for conflicts periodically
-    const checkConflicts = async () => {
-      try {
-        const conflictList = await DatabaseService.getConflicts();
-        setConflicts(conflictList);
-      } catch (error) {
-        console.error('Error checking conflicts:', error);
-      }
-    };
-
+    // Check for conflicts initially and periodically
     checkConflicts();
-    const conflictInterval = setInterval(checkConflicts, 30000); // Check every 30 seconds
+    const conflictInterval = setInterval(checkConflicts, 10000); // Check every 10 seconds
 
     return () => {
       unsubscribe();
       clearInterval(conflictInterval);
     };
   }, []);
+
+  const checkConflicts = async () => {
+    try {
+      const conflictList = await DatabaseService.getConflicts();
+      setConflicts(conflictList);
+    } catch (error) {
+      console.error('Error checking conflicts:', error);
+    }
+  };
 
   const getStatusIcon = () => {
     if (!syncStatus.isOnline) return '🔴';
@@ -154,25 +154,6 @@ const SyncStatus = () => {
               {syncStatus.status === 'syncing' ? 'Syncing...' : 'Force Sync'}
             </button>
           </div>
-
-          {conflicts.length > 0 && (
-            <div className="conflicts-section">
-              <h4>Conflicts ({conflicts.length})</h4>
-              <div className="conflicts-list">
-                {conflicts.map(conflict => (
-                  <div key={conflict.id} className="conflict-item">
-                    <span className="conflict-id">{conflict.id}</span>
-                    <span className="conflict-count">
-                      {conflict.conflicts.length} revision(s)
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <p className="conflict-note">
-                Use console tools to resolve conflicts: <code>commad.sync.conflicts()</code>
-              </p>
-            </div>
-          )}
         </div>
       )}
     </div>
