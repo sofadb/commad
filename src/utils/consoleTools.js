@@ -358,7 +358,7 @@ Connection Management:
 
 Conflict Resolution:
 • commad.sync.conflicts()   - List documents with conflicts
-• commad.sync.resolve(id, winningRev, losingRevs) - Resolve conflict
+• commad.sync.resolve(id, winningRev, losingRevs) - Manual conflict resolution
 
 Examples:
   commad.sync.status()
@@ -407,6 +407,19 @@ Sync Interval: ${config.syncInterval}ms
       try {
         const result = await DatabaseService.forceSync();
         console.log('✅ Sync completed successfully:', result);
+        
+        // Auto-resolve any conflicts that occurred during sync
+        setTimeout(async () => {
+          try {
+            const resolved = await DatabaseService.autoResolveConflicts();
+            if (resolved > 0) {
+              console.log(`🤖 Auto-resolved ${resolved} conflict(s) after sync`);
+            }
+          } catch (error) {
+            console.warn('⚠️ Could not auto-resolve conflicts after sync:', error.message);
+          }
+        }, 1000);
+        
         return result;
       } catch (error) {
         console.error('❌ Sync failed:', error.message);
@@ -437,6 +450,19 @@ Sync Interval: ${config.syncInterval}ms
       try {
         const result = await syncService.pullFromRemote();
         console.log('✅ Pull completed successfully:', result);
+        
+        // Auto-resolve any conflicts that occurred during pull
+        setTimeout(async () => {
+          try {
+            const resolved = await DatabaseService.autoResolveConflicts();
+            if (resolved > 0) {
+              console.log(`🤖 Auto-resolved ${resolved} conflict(s) after pull`);
+            }
+          } catch (error) {
+            console.warn('⚠️ Could not auto-resolve conflicts after pull:', error.message);
+          }
+        }, 1000);
+        
         return result;
       } catch (error) {
         console.error('❌ Pull failed:', error.message);

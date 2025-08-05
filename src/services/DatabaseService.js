@@ -43,11 +43,16 @@ export const DatabaseService = {
 
   /**
    * Get a document by ID
-   * @param {string} id - Document ID
+   * @param {string} id - Document ID (can include ?rev=revision for specific revision)
    * @returns {Promise<Object|null>} Promise resolving to document object or null if not found
    */
   getDocument: async (id) => {
     try {
+      // Check if this is a request for a specific revision
+      if (id.includes('?rev=')) {
+        const [docId, revParam] = id.split('?rev=');
+        return await db.get(docId, { rev: revParam });
+      }
       return await db.get(id);
     } catch (error) {
       if (error.name === 'not_found') {
@@ -173,5 +178,13 @@ export const DatabaseService = {
    */
   resolveConflict: async (docId, winningRev, losingRevs) => {
     return await syncService.resolveConflict(docId, winningRev, losingRevs);
+  },
+
+  /**
+   * Auto-resolve all conflicts by merging content
+   * @returns {Promise<number>} Promise resolving to number of conflicts resolved
+   */
+  autoResolveConflicts: async () => {
+    return await syncService.autoResolveConflicts();
   }
 };

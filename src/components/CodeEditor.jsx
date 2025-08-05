@@ -16,6 +16,7 @@ const CodeEditor = () => {
   const [documents, setDocuments] = useState([]);
   const [currentDocument, setCurrentDocument] = useState(null);
   const [content, setContent] = useState('');
+  const [isSaved, setIsSaved] = useState(true); // Track save status
   
   // Initialize documents from database
   useEffect(() => {
@@ -27,31 +28,130 @@ const CodeEditor = () => {
       if (allDocs.length > 0) {
         setCurrentDocument(allDocs[0]);
         setContent(allDocs[0].content);
+        setIsSaved(true); // Initially loaded document is saved
       }
     }
     
     loadDocuments();
   }, []);
-  
-  // Save current document content when it changes
+
+  // Listen for document updates (e.g., after conflict resolution)
   useEffect(() => {
-    if (currentDocument && content !== currentDocument.content) {
-      const updatedDoc = {
-        ...currentDocument,
-        content,
-        updatedAt: new Date().toISOString()
-      };
+    const handleDocumentsUpdate = async (event) => {
+      // If we have specific document IDs that were updated, only refresh those
+      const updatedDocIds = event?.detail?.documentIds;
       
-      async function saveDocument() {
-        const savedDoc = await DocumentManager.saveDocument(updatedDoc);
-        setCurrentDocument(savedDoc);
+      if (updatedDocIds && currentDocument) {
+        // Check if current document was updated
+        const currentDocId = currentDocument.id || currentDocument._id;
+        if (updatedDocIds.includes(currentDocId)) {
+          console.log('Current document was updated remotely, refreshing editor');
+          try {
+            const updatedCurrentDoc = await DocumentManager.getDocument(currentDocId);
+            if (updatedCurrentDoc && updatedCurrentDoc.updatedAt !== currentDocument.updatedAt) {
+              setCurrentDocument(updatedCurrentDoc);
+              setContent(updatedCurrentDoc.content);
+              setIsSaved(true); // Document updated from remote is considered saved
+              
+              // Update the editor view with the new content
+              if (editorView) {
+                editorView.dispatch({
+                  changes: {
+                    from: 0,
+                    to: editorView.state.doc.length,
+                    insert: updatedCurrentDoc.content
+                  }
+                });
+              }
+            }
+          } catch (error) {
+            console.error('Error refreshing current document:', error);
+          }
+        }
         
-        // Update document list to reflect the change
+        // Only reload full document list if we need to (for the command palette)
+        if (isCommandPaletteOpen) {
+          const allDocs = await DocumentManager.getAllDocuments();
+          setDocuments(allDocs);
+        }
+      } else {
+        // Fallback: full refresh only if we don't have specific IDs
+        const allDocs = await DocumentManager.getAllDocuments();
+        setDocuments(allDocs);
+        
+        // Check if the current document was updated
+        if (currentDocument) {
+          const updatedCurrentDoc = allDocs.find(doc => doc.id === currentDocument.id || doc._id === currentDocument.id);
+          if (updatedCurrentDoc && updatedCurrentDoc.updatedAt !== currentDocument.updatedAt) {
+            console.log('Current document was updated remotely, refreshing editor');
+            setCurrentDocument(updatedCurrentDoc);
+            setContent(updatedCurrentDoc.content);
+            setIsSaved(true); // Document updated from remote is considered saved
+            
+            // Update the editor view with the new content
+            if (editorView) {
+              editorView.dispatch({
+                changes: {
+                  from: 0,
+                  to: editorView.state.doc.length,
+                  insert: updatedCurrentDoc.content
+                }
+              });
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener('documentsUpdated', handleDocumentsUpdate);
+    
+    return () => {
+      window.removeEventListener('documentsUpdated', handleDocumentsUpdate);
+    };
+  }, [currentDocument, editorView, isCommandPaletteOpen]);
+  
+  // Refresh documents list when command palette opens (lazy loading)
+  useEffect(() => {
+    if (isCommandPaletteOpen) {
+      async function refreshDocumentsList() {
         const allDocs = await DocumentManager.getAllDocuments();
         setDocuments(allDocs);
       }
+      refreshDocumentsList();
+    }
+  }, [isCommandPaletteOpen]);
+  
+  // Debounced save - wait for user to stop typing before saving
+  useEffect(() => {
+    if (currentDocument && content !== currentDocument.content) {
+      // Mark as unsaved when content changes
+      setIsSaved(false);
       
-      saveDocument();
+      // Clear any existing timeout
+      const timeoutId = setTimeout(async () => {
+        const updatedDoc = {
+          ...currentDocument,
+          content,
+          updatedAt: new Date().toISOString()
+        };
+        
+        try {
+          console.log('Auto-saving document after typing pause...');
+          const savedDoc = await DocumentManager.saveDocument(updatedDoc);
+          setCurrentDocument(savedDoc);
+          setIsSaved(true); // Mark as saved after successful save
+          
+          // Update document list to reflect the change
+          const allDocs = await DocumentManager.getAllDocuments();
+          setDocuments(allDocs);
+        } catch (error) {
+          console.error('Error auto-saving document:', error);
+          // Keep isSaved as false if save failed
+        }
+      }, 2000); // Wait 2 seconds after user stops typing
+      
+      // Cleanup function to clear timeout if component unmounts or content changes again
+      return () => clearTimeout(timeoutId);
     }
   }, [content, currentDocument]);
   
@@ -77,6 +177,7 @@ const CodeEditor = () => {
       // Switch to the selected document
       setCurrentDocument(document);
       setContent(document.content);
+      setIsSaved(true); // Reset save status for new document
       
       // Update editor content and focus
       if (editorView) {
@@ -107,6 +208,7 @@ const CodeEditor = () => {
       // Switch to the new document
       setCurrentDocument(newDoc);
       setContent(newDoc.content);
+      setIsSaved(true); // New document is considered saved
       
       // Update editor content and focus
       if (editorView) {
@@ -153,10 +255,13 @@ const CodeEditor = () => {
         // Use async/await in an IIFE
         (async () => {
           try {
+            console.log('Manual save triggered (Ctrl+S)');
             const savedDoc = await DocumentManager.saveDocument(updatedDoc);
             setCurrentDocument(savedDoc);
+            setIsSaved(true); // Mark as saved after successful save
             const allDocs = await DocumentManager.getAllDocuments();
             setDocuments(allDocs);
+            console.log('Document saved successfully');
           } catch (error) {
             console.error('Error saving document with keyboard shortcut:', error);
           }
@@ -224,10 +329,13 @@ const CodeEditor = () => {
                 // Use an IIFE to handle async calls
                 (async () => {
                   try {
+                    console.log('Manual save triggered (Ctrl+S in editor)');
                     const savedDoc = await DocumentManager.saveDocument(updatedDoc);
                     setCurrentDocument(savedDoc);
+                    setIsSaved(true); // Mark as saved after successful save
                     const allDocs = await DocumentManager.getAllDocuments();
                     setDocuments(allDocs);
+                    console.log('Document saved successfully');
                   } catch (error) {
                     console.error('Error saving document in CodeMirror keybinding:', error);
                   }
@@ -268,7 +376,13 @@ const CodeEditor = () => {
           title="Click to open document list"
         >
           <h1 className="document-title">
-            {currentDocument.title} <span className="title-click-indicator">⌘</span>
+            {currentDocument.title} 
+            {!isSaved && (
+              <span className="save-status unsaved">
+                ●
+              </span>
+            )}
+            <span className="title-click-indicator">⌘</span>
           </h1>
           <div className="document-meta">
             Last updated: {new Date(currentDocument.updatedAt).toLocaleString()}
