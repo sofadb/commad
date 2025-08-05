@@ -1,5 +1,9 @@
 # commad
 
+> [!CAUTION]
+> This project is under active development and is **not production-ready**.  
+> Breaking changes may occur at any time.
+
 A React application built with Vite.
 
 ## Prerequisites
