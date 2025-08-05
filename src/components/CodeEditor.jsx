@@ -78,7 +78,7 @@ const CodeEditor = () => {
       setCurrentDocument(document);
       setContent(document.content);
       
-      // Update editor content
+      // Update editor content and focus
       if (editorView) {
         editorView.dispatch({
           changes: {
@@ -87,6 +87,9 @@ const CodeEditor = () => {
             insert: document.content
           }
         });
+        
+        // Focus the editor after switching documents
+        editorView.focus();
       }
     }
   };
@@ -105,7 +108,7 @@ const CodeEditor = () => {
       setCurrentDocument(newDoc);
       setContent(newDoc.content);
       
-      // Update editor content
+      // Update editor content and focus
       if (editorView) {
         editorView.dispatch({
           changes: {
@@ -114,6 +117,9 @@ const CodeEditor = () => {
             insert: newDoc.content
           }
         });
+        
+        // Focus the editor after creating a new document
+        editorView.focus();
       }
     } catch (error) {
       console.error('Error creating document:', error);
@@ -237,6 +243,11 @@ const CodeEditor = () => {
 
     setEditorView(view);
     setContent(currentDocument.content);
+
+    // Focus the editor when it's first created or when switching documents
+    setTimeout(() => {
+      view.focus();
+    }, 0);
 
     // Cleanup
     return () => {
