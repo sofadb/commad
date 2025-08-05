@@ -1,0 +1,126 @@
+/* ConfigDisplay.css - Styles for configuration display component */
+
+.config-display {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.config-display h3 {
+  margin: 0 0 16px 0;
+  color: #495057;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.config-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.config-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.config-item label {
+  font-weight: 500;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.config-value {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  padding: 2px 6px;
+  background: #f1f3f4;
+  border-radius: 3px;
+  color: #495057;
+}
+
+.config-value.enabled {
+  background: #d4edda;
+  color: #155724;
+}
+
+.config-value.disabled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.config-note {
+  padding: 12px;
+  background: #e7f3ff;
+  border: 1px solid #b8daff;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.config-note p {
+  margin: 0 0 8px 0;
+  color: #004085;
+  font-weight: 500;
+}
+
+.config-note code {
+  display: inline-block;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #e83e8c;
+  word-break: break-all;
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .config-display {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .config-display h3 {
+    color: #e2e8f0;
+  }
+  
+  .config-item {
+    background: #1a202c;
+    border-color: #4a5568;
+  }
+  
+  .config-item label {
+    color: #a0aec0;
+  }
+  
+  .config-value {
+    background: #4a5568;
+    color: #e2e8f0;
+  }
+  
+  .config-note {
+    background: #2c5282;
+    border-color: #3182ce;
+  }
+  
+  .config-note p {
+    color: #bee3f8;
+  }
+  
+  .config-note code {
+    background: #4a5568;
+    border-color: #718096;
+    color: #f687b3;
+  }
+}
