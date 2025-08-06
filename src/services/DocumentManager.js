@@ -3,6 +3,7 @@
  */
 import { DatabaseService } from './DatabaseService';
 import settingsDocumentService from './SettingsDocumentService.js';
+import { extractFrontmatterForStorage, reconstructForDisplay } from '../utils/frontmatter.js';
 
 // Default document to create when no documents exist
 const DEFAULT_DOCUMENT = {
@@ -34,6 +35,17 @@ export const DocumentManager = {
         documents = [defaultDoc];
       }
       
+      // Reconstruct content with frontmatter for all documents
+      documents = documents.map(doc => {
+        if (doc.frontmatter) {
+          return {
+            ...doc,
+            content: reconstructForDisplay(doc.frontmatter, doc.content)
+          };
+        }
+        return doc;
+      });
+      
       // Add settings document at the beginning
       const settingsDoc = settingsDocumentService.getDocument();
       documents.unshift(settingsDoc);
@@ -62,7 +74,17 @@ export const DocumentManager = {
         return settingsDocumentService.getDocument();
       }
       
-      return await DatabaseService.getDocument(id);
+      const document = await DatabaseService.getDocument(id);
+      if (!document) {
+        return null;
+      }
+
+      // Reconstruct content with frontmatter for display
+      if (document.frontmatter) {
+        document.content = reconstructForDisplay(document.frontmatter, document.content);
+      }
+      
+      return document;
     } catch (error) {
       console.error('Error getting document:', error);
       return null;
@@ -81,8 +103,26 @@ export const DocumentManager = {
         await settingsDocumentService.saveDocument(document.content);
         return settingsDocumentService.getDocument();
       }
+
+      // Extract frontmatter from content for storage
+      const { frontmatter, contentWithoutFrontmatter } = extractFrontmatterForStorage(document.content);
       
-      return await DatabaseService.saveDocument(document);
+      // Create document for storage with separated frontmatter
+      const documentForStorage = {
+        ...document,
+        content: contentWithoutFrontmatter,
+        frontmatter: frontmatter
+      };
+      
+      // Save the document with separated frontmatter
+      const savedDocument = await DatabaseService.saveDocument(documentForStorage);
+      
+      // Return the document with reconstructed content for the UI
+      if (savedDocument && savedDocument.frontmatter) {
+        savedDocument.content = reconstructForDisplay(savedDocument.frontmatter, savedDocument.content);
+      }
+      
+      return savedDocument;
     } catch (error) {
       console.error('Error saving document:', error);
       throw error; // Re-throw for settings validation errors
