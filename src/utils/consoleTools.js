@@ -5,6 +5,7 @@
 import configManager from '../services/ConfigService';
 import syncService from '../services/SyncService.js';
 import { DatabaseService } from '../services/DatabaseService.js';
+import settingsDocumentService from '../services/SettingsDocumentService.js';
 
 // Console tools object that will be exposed globally
 const consoleTools = {
@@ -173,6 +174,26 @@ This will:
     },
 
     /**
+     * Export configuration as YAML
+     */
+    exportYAML: () => {
+      const yamlContent = settingsDocumentService.export();
+      console.log('Configuration exported as YAML:\n', yamlContent);
+      return yamlContent;
+    },
+
+    /**
+     * Open settings document in editor
+     */
+    openSettings: () => {
+      console.log('💡 Open the command palette (Ctrl+P) and select "⚙️ Settings" to edit configuration as YAML');
+      console.log('💡 Or use commad.config.exportYAML() to see the current settings in YAML format');
+      
+      // Dispatch a custom event that the UI can listen to
+      window.dispatchEvent(new CustomEvent('openSettingsDocument'));
+    },
+
+    /**
      * Export configuration as JSON
      */
     export: () => {
@@ -216,6 +237,8 @@ Available commands:
 • commad.config.getAll()        - Display all config in a table
 • commad.config.reset()         - Reset to default configuration
 • commad.config.export()        - Export config as JSON string
+• commad.config.exportYAML()    - Export config as YAML string
+• commad.config.openSettings()  - Open settings document in editor
 • commad.config.import(json)    - Import config from JSON string
 • commad.config.help()          - Show this help
 
