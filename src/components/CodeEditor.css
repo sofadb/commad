@@ -67,6 +67,12 @@
   align-items: center;
 }
 
+.document-icon {
+  font-size: 16px;
+  margin-right: 8px;
+  opacity: 0.8;
+}
+
 .save-status {
   font-size: 12px;
   margin-left: 6px;
@@ -75,6 +81,10 @@
 
 .save-status.unsaved {
   color: #8c8c8c; /* VS Code gray */
+}
+
+.save-status.saved {
+  color: #28a745; /* Green for saved settings */
 }
 
 .title-click-indicator {

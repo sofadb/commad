@@ -2,6 +2,7 @@
  * DocumentManager - Service for managing documents with PouchDB
  */
 import { DatabaseService } from './DatabaseService';
+import settingsDocumentService from './SettingsDocumentService.js';
 
 // Default document to create when no documents exist
 const DEFAULT_DOCUMENT = {
@@ -33,10 +34,16 @@ export const DocumentManager = {
         documents = [defaultDoc];
       }
       
-      // Sort by most recently updated
-      return documents.sort((a, b) => 
+      // Add settings document at the beginning
+      const settingsDoc = settingsDocumentService.getDocument();
+      documents.unshift(settingsDoc);
+      
+      // Sort regular documents by most recently updated (keep settings first)
+      const regularDocs = documents.slice(1).sort((a, b) => 
         new Date(b.updatedAt) - new Date(a.updatedAt)
       );
+      
+      return [settingsDoc, ...regularDocs];
     } catch (error) {
       console.error('Error getting documents:', error);
       return [];
@@ -50,6 +57,11 @@ export const DocumentManager = {
    */
   getDocument: async (id) => {
     try {
+      // Check if this is the settings document
+      if (id === 'settings') {
+        return settingsDocumentService.getDocument();
+      }
+      
       return await DatabaseService.getDocument(id);
     } catch (error) {
       console.error('Error getting document:', error);
@@ -64,10 +76,16 @@ export const DocumentManager = {
    */
   saveDocument: async (document) => {
     try {
+      // Check if this is the settings document
+      if (document.id === 'settings') {
+        await settingsDocumentService.saveDocument(document.content);
+        return settingsDocumentService.getDocument();
+      }
+      
       return await DatabaseService.saveDocument(document);
     } catch (error) {
       console.error('Error saving document:', error);
-      return document;
+      throw error; // Re-throw for settings validation errors
     }
   },
 
@@ -78,11 +96,17 @@ export const DocumentManager = {
    */
   deleteDocument: async (id) => {
     try {
+      // Don't allow deleting the settings document
+      if (id === 'settings') {
+        return false;
+      }
+      
       // Check if this is the last document
       const documents = await DocumentManager.getAllDocuments();
+      const regularDocs = documents.filter(doc => doc.id !== 'settings');
       
-      // Don't allow deleting the last document
-      if (documents.length <= 1) {
+      // Don't allow deleting the last regular document
+      if (regularDocs.length <= 1) {
         return false;
       }
       

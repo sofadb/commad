@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { basicSetup, EditorView } from 'codemirror';
 import { markdown } from '@codemirror/lang-markdown';
+import { yaml } from '@codemirror/lang-yaml';
 import { languages } from '@codemirror/language-data';
 import { keymap } from '@codemirror/view';
 import { defaultKeymap } from '@codemirror/commands';
@@ -103,10 +104,18 @@ const CodeEditor = () => {
       }
     };
 
+    const handleOpenSettingsDocument = () => {
+      // Open the command palette and focus on settings document
+      setIsCommandPaletteOpen(true);
+      // The user can then select the settings document
+    };
+
     window.addEventListener('documentsUpdated', handleDocumentsUpdate);
+    window.addEventListener('openSettingsDocument', handleOpenSettingsDocument);
     
     return () => {
       window.removeEventListener('documentsUpdated', handleDocumentsUpdate);
+      window.removeEventListener('openSettingsDocument', handleOpenSettingsDocument);
     };
   }, [currentDocument, editorView, isCommandPaletteOpen]);
   
@@ -121,11 +130,16 @@ const CodeEditor = () => {
     }
   }, [isCommandPaletteOpen]);
   
-  // Debounced save - wait for user to stop typing before saving
+  // Debounced save - wait for user to stop typing before saving (only for regular documents)
   useEffect(() => {
     if (currentDocument && content !== currentDocument.content) {
       // Mark as unsaved when content changes
       setIsSaved(false);
+      
+      // Skip autosave for settings document
+      if (currentDocument.id === 'settings' || currentDocument.noAutosave) {
+        return; // No cleanup needed for settings
+      }
       
       // Clear any existing timeout
       const timeoutId = setTimeout(async () => {
@@ -255,15 +269,44 @@ const CodeEditor = () => {
         // Use async/await in an IIFE
         (async () => {
           try {
-            console.log('Manual save triggered (Ctrl+S)');
+            const isSettings = currentDocument.id === 'settings';
+            console.log(isSettings ? 'Saving settings and applying changes...' : 'Manual save triggered (Ctrl+S)');
+            
             const savedDoc = await DocumentManager.saveDocument(updatedDoc);
             setCurrentDocument(savedDoc);
             setIsSaved(true); // Mark as saved after successful save
-            const allDocs = await DocumentManager.getAllDocuments();
-            setDocuments(allDocs);
-            console.log('Document saved successfully');
+            
+            if (isSettings) {
+              console.log('✅ Settings saved and applied successfully');
+              // Show a brief success message
+              const statusElement = document.querySelector('.save-status');
+              if (statusElement) {
+                statusElement.textContent = '✅ Settings Applied';
+                statusElement.style.color = '#28a745';
+                setTimeout(() => {
+                  statusElement.textContent = currentDocument.noAutosave ? 'Press Ctrl+S to save' : 'Saved';
+                  statusElement.style.color = '';
+                }, 2000);
+              }
+            } else {
+              const allDocs = await DocumentManager.getAllDocuments();
+              setDocuments(allDocs);
+              console.log('Document saved successfully');
+            }
           } catch (error) {
-            console.error('Error saving document with keyboard shortcut:', error);
+            console.error('Error saving document:', error);
+            setIsSaved(false);
+            
+            // Show error message
+            const statusElement = document.querySelector('.save-status');
+            if (statusElement) {
+              statusElement.textContent = `❌ Error: ${error.message}`;
+              statusElement.style.color = '#dc3545';
+              setTimeout(() => {
+                statusElement.textContent = currentDocument.noAutosave ? 'Press Ctrl+S to save' : 'Unsaved';
+                statusElement.style.color = '';
+              }, 3000);
+            }
           }
         })();
       }
@@ -282,12 +325,17 @@ const CodeEditor = () => {
   useEffect(() => {
     if (!editorRef.current || !currentDocument) return;
 
+    // Choose language mode based on document type
+    const languageExtension = currentDocument.type === 'settings' 
+      ? yaml()
+      : markdown({ codeLanguages: languages });
+
     // Create the editor view - ensure we're creating it with the right layout
     const view = new EditorView({
       doc: currentDocument.content,
       extensions: [
         basicSetup,
-        markdown({ codeLanguages: languages }),
+        languageExtension,
         EditorView.updateListener.of(update => {
           if (update.docChanged) {
             setContent(update.state.doc.toString());
@@ -376,16 +424,26 @@ const CodeEditor = () => {
           title="Click to open document list"
         >
           <h1 className="document-title">
+            {currentDocument.icon && <span className="document-icon">{currentDocument.icon}</span>}
             {currentDocument.title} 
             {!isSaved && (
               <span className="save-status unsaved">
-                ●
+                {currentDocument.noAutosave ? 'Press Ctrl+S to save' : '●'}
+              </span>
+            )}
+            {isSaved && currentDocument.noAutosave && (
+              <span className="save-status saved">
+                Saved
               </span>
             )}
             <span className="title-click-indicator">⌘</span>
           </h1>
           <div className="document-meta">
-            Last updated: {new Date(currentDocument.updatedAt).toLocaleString()}
+            {currentDocument.noAutosave ? (
+              <span>Settings document - Manual save only (Ctrl+S)</span>
+            ) : (
+              <span>Last updated: {new Date(currentDocument.updatedAt).toLocaleString()}</span>
+            )}
           </div>
         </div>
       )}

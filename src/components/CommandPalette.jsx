@@ -87,11 +87,15 @@ const CommandPalette = ({
                     }}
                     value={document.title} // This helps with filtering
                   >
-                    <div className="command-icon">📝</div>
+                    <div className="command-icon">{document.icon || '📝'}</div>
                     <div className="command-details">
                       <div className="command-name">{document.title}</div>
                       <div className="command-description">
-                        Last updated: {new Date(document.updatedAt).toLocaleString()}
+                        {document.type === 'settings' ? (
+                          'Application settings (Ctrl+S to save)'
+                        ) : (
+                          `Last updated: ${new Date(document.updatedAt).toLocaleString()}`
+                        )}
                       </div>
                     </div>
                     <div className="command-action">
